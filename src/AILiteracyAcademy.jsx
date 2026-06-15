@@ -2294,11 +2294,15 @@ function ChatWidget() {
 
 /* ===================== MAIN APP ===================== */
 
+function loadSaved(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+}
+
 export default function App() {
   const [view, setView] = useState({ screen: "home" });
-  const [completed, setCompleted] = useState({});
-  const [quizBest, setQuizBest] = useState({});
-  const [solvedChallenges, setSolvedChallenges] = useState({});
+  const [completed, setCompleted] = useState(() => loadSaved("ail_completed", {}));
+  const [quizBest, setQuizBest] = useState(() => loadSaved("ail_quizBest", {}));
+  const [solvedChallenges, setSolvedChallenges] = useState(() => loadSaved("ail_solved", {}));
 
   useEffect(() => {
     const el = document.createElement("style");
@@ -2306,6 +2310,10 @@ export default function App() {
     document.head.appendChild(el);
     return () => el.remove();
   }, []);
+
+  useEffect(() => { try { localStorage.setItem("ail_completed", JSON.stringify(completed)); } catch {} }, [completed]);
+  useEffect(() => { try { localStorage.setItem("ail_quizBest", JSON.stringify(quizBest)); } catch {} }, [quizBest]);
+  useEffect(() => { try { localStorage.setItem("ail_solved", JSON.stringify(solvedChallenges)); } catch {} }, [solvedChallenges]);
 
   const track = TRACKS.find((t) => t.id === view.trackId);
 
