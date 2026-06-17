@@ -2298,7 +2298,7 @@ function loadSaved(key, fallback) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
 }
 
-export default function App({ session, onSignIn }) {
+export default function App({ session, onSignIn, onSignOut }) {
   const [view, setView] = useState({ screen: "home" });
   const [completed, setCompleted] = useState(() => loadSaved("ail_completed", {}));
   const [quizBest, setQuizBest] = useState(() => loadSaved("ail_quizBest", {}));
@@ -2334,6 +2334,15 @@ export default function App({ session, onSignIn }) {
           <span style={{ marginLeft: "auto", fontSize: 13, color: C.inkSoft }}>
             {Object.keys(completed).length}/31 lessons · {Object.keys(solvedChallenges).length} challenges
           </span>
+          {session ? (
+            <button onClick={onSignOut} style={{ ...Body, marginLeft: 16, padding: "7px 14px", borderRadius: 7, border: `1px solid ${C.line}`, background: C.card, color: C.inkSoft, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+              Sign out
+            </button>
+          ) : (
+            <button onClick={onSignIn} style={{ ...Body, marginLeft: 16, padding: "7px 14px", borderRadius: 7, border: "none", background: C.teal, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+              Sign in
+            </button>
+          )}
         </div>
       </header>
 
