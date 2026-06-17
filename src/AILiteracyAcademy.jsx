@@ -2413,7 +2413,24 @@ export default function App({ session, onSignIn }) {
 
 /* ===================== HOME ===================== */
 
-const TRACK_ICONS = { beginner: "🌱", intermediate: "⚡", expert: "🔬" };
+const TRACK_ICONS = {
+  beginner: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+  ),
+  intermediate: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+    </svg>
+  ),
+  expert: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3"/><circle cx="3" cy="6" r="2"/><circle cx="21" cy="6" r="2"/><circle cx="3" cy="18" r="2"/><circle cx="21" cy="18" r="2"/>
+      <line x1="5" y1="6" x2="9" y2="11"/><line x1="19" y1="6" x2="15" y2="11"/><line x1="5" y1="18" x2="9" y2="13"/><line x1="19" y1="18" x2="15" y2="13"/>
+    </svg>
+  ),
+};
 
 function Home({ completed, quizBest, solvedChallenges, onPick, onExplore }) {
   const totalLessons    = TRACKS.reduce((a, t) => a + t.lessons.length, 0);
@@ -2494,7 +2511,11 @@ function Home({ completed, quizBest, solvedChallenges, onPick, onExplore }) {
       {/* encyclopedia */}
       <button onClick={onExplore}
         style={{ width: "100%", textAlign: "left", background: C.ink, border: "none", borderRadius: 14, padding: "22px 24px", display: "flex", alignItems: "center", gap: 18 }}>
-        <div style={{ width: 48, height: 48, borderRadius: 12, background: `${C.amber}25`, display: "grid", placeItems: "center", fontSize: 22, flexShrink: 0 }}>📖</div>
+        <div style={{ width: 48, height: 48, borderRadius: 12, background: `${C.amber}25`, display: "grid", placeItems: "center", flexShrink: 0, color: C.amber }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+        </div>
         <div style={{ flex: 1 }}>
           <div style={{ ...Display, fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 4 }}>AI Encyclopedia</div>
           <p style={{ ...Body, color: "#8BBFBB", fontSize: 13.5, margin: 0, lineHeight: 1.5 }}>
@@ -2595,7 +2616,13 @@ function TrackView({ track, completed, quizBest, solvedChallenges, session, onSi
         </button>
 
         <button onClick={session ? onLab : onSignIn} style={{ textAlign: "left", background: C.codeBg, border: `1px solid rgba(255,255,255,.06)`, borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 38, height: 38, borderRadius: 10, background: track.color, display: "grid", placeItems: "center", color: "#fff", ...Mono, fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{session ? ">_" : "🔒"}</div>
+          <div style={{ width: 38, height: 38, borderRadius: 10, background: track.color, display: "grid", placeItems: "center", color: "#fff", ...Mono, fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+            {session ? ">_" : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            )}
+          </div>
           <div style={{ flex: 1 }}>
             <div style={{ ...Display, fontWeight: 700, fontSize: 15, color: "#fff" }}>Practice Lab{!session && " — sign in to unlock"}</div>
             <div style={{ fontSize: 12.5, color: "#9FB8B4", marginTop: 2 }}>
@@ -2663,7 +2690,11 @@ function LessonView({ track, idx, session, onSignIn, onBack, onComplete }) {
       {/* coding exercises */}
       {exercises.length > 0 && !session && (
         <div style={{ background: "#0C1A1D", borderRadius: 12, padding: "22px 24px", margin: "22px 0 24px", border: "1px solid rgba(255,255,255,.08)", display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
-          <div style={{ fontSize: 28, lineHeight: 1 }}>🔒</div>
+          <div style={{ color: "#7AADA9" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
           <div style={{ flex: 1, minWidth: 200 }}>
             <div style={{ ...Display, fontWeight: 700, fontSize: 15, color: "#fff", marginBottom: 3 }}>
               {exercises.length} coding exercise{exercises.length > 1 ? "s" : ""} in this lesson
