@@ -48,13 +48,18 @@ export default function Auth({ onClose }) {
 
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setMessage({ type: "success", text: "Check your email for a confirmation link!" });
+        // If email confirmation is disabled, session comes back immediately
+        if (data.session) {
+          if (onClose) onClose();
+          return;
+        }
+        setMessage({ type: "success", text: "Check your email for a confirmation link, then sign in." });
       } else if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        // session change triggers App re-render via onAuthStateChange
+        if (onClose) onClose(); // close modal — onAuthStateChange will update session
       } else if (mode === "reset") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: window.location.origin,

@@ -18,7 +18,18 @@ function Root() {
       if (session) setShowAuth(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Re-check session when tab regains focus (catches OAuth redirect on return)
+    const onFocus = () => {
+      supabase.auth.getSession()
+        .then(({ data: { session } }) => setSession(session ?? null))
+        .catch(() => {});
+    };
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("focus", onFocus);
+    };
   }, []);
 
   return (
