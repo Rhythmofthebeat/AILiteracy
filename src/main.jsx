@@ -5,19 +5,22 @@ import Auth from "./Auth.jsx";
 import { supabase } from "./supabase.js";
 
 function Root() {
-  const [session, setSession] = useState(undefined); // undefined = loading
+  const [session, setSession] = useState(null); // null = no session / not yet known
   const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+    // Safely initialize auth — if Supabase isn't configured, stay with null session
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => setSession(session ?? null))
+      .catch(() => setSession(null));
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session) setShowAuth(false); // close modal on sign-in
+      setSession(session ?? null);
+      if (session) setShowAuth(false);
     });
+
     return () => subscription.unsubscribe();
   }, []);
-
-  if (session === undefined) return null;
 
   return (
     <>
