@@ -2298,7 +2298,7 @@ function loadSaved(key, fallback) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
 }
 
-export default function App() {
+export default function App({ session, onSignIn }) {
   const [view, setView] = useState({ screen: "home" });
   const [completed, setCompleted] = useState(() => loadSaved("ail_completed", {}));
   const [quizBest, setQuizBest] = useState(() => loadSaved("ail_quizBest", {}));
@@ -2348,6 +2348,7 @@ export default function App() {
         )}
         {view.screen === "track" && track && (
           <TrackView track={track} completed={completed} quizBest={quizBest} solvedChallenges={solvedChallenges}
+            session={session} onSignIn={onSignIn}
             onBack={() => setView({ screen: "home" })}
             onLesson={(i) => setView({ screen: "lesson", trackId: track.id, lessonIdx: i })}
             onQuiz={() => setView({ screen: "quiz", trackId: track.id })}
@@ -2355,6 +2356,7 @@ export default function App() {
         )}
         {view.screen === "lesson" && track && (
           <LessonView track={track} idx={view.lessonIdx}
+            session={session} onSignIn={onSignIn}
             onBack={() => setView({ screen: "track", trackId: track.id })}
             onComplete={() => {
               const lesson = track.lessons[view.lessonIdx];
@@ -2371,6 +2373,7 @@ export default function App() {
         )}
         {view.screen === "lab" && track && (
           <PracticeLab track={track}
+            session={session} onSignIn={onSignIn}
             solvedChallenges={solvedChallenges}
             onSolved={(id) => setSolvedChallenges((s) => ({ ...s, [id]: true }))}
             onBack={() => setView({ screen: "track", trackId: track.id })} />
@@ -2506,7 +2509,7 @@ function Home({ completed, quizBest, solvedChallenges, onPick, onExplore }) {
 
 /* ===================== TRACK VIEW (module-grouped) ===================== */
 
-function TrackView({ track, completed, quizBest, solvedChallenges, onBack, onLesson, onQuiz, onLab }) {
+function TrackView({ track, completed, quizBest, solvedChallenges, session, onSignIn, onBack, onLesson, onQuiz, onLab }) {
   const solved  = track.challenges.filter((c) => solvedChallenges[c.id]).length;
   const done    = track.lessons.filter((l) => completed[l.id]).length;
   const modules = [...new Set(track.lessons.map((l) => l.module))];
@@ -2591,12 +2594,12 @@ function TrackView({ track, completed, quizBest, solvedChallenges, onBack, onLes
           <span style={{ color: C.amber, fontSize: 18 }}>→</span>
         </button>
 
-        <button onClick={onLab} style={{ textAlign: "left", background: C.codeBg, border: `1px solid rgba(255,255,255,.06)`, borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 38, height: 38, borderRadius: 10, background: track.color, display: "grid", placeItems: "center", color: "#fff", ...Mono, fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{">_"}</div>
+        <button onClick={session ? onLab : onSignIn} style={{ textAlign: "left", background: C.codeBg, border: `1px solid rgba(255,255,255,.06)`, borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 10, background: track.color, display: "grid", placeItems: "center", color: "#fff", ...Mono, fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{session ? ">_" : "🔒"}</div>
           <div style={{ flex: 1 }}>
-            <div style={{ ...Display, fontWeight: 700, fontSize: 15, color: "#fff" }}>Practice Lab</div>
+            <div style={{ ...Display, fontWeight: 700, fontSize: 15, color: "#fff" }}>Practice Lab{!session && " — sign in to unlock"}</div>
             <div style={{ fontSize: 12.5, color: "#9FB8B4", marginTop: 2 }}>
-              {solved}/{track.challenges.length} challenges solved · real Python · AI mentor feedback
+              {session ? `${solved}/${track.challenges.length} challenges solved · real Python · AI mentor feedback` : "Create a free account to write and run real Python"}
             </div>
           </div>
           <span style={{ color: track.color, fontSize: 18 }}>→</span>
@@ -2608,7 +2611,7 @@ function TrackView({ track, completed, quizBest, solvedChallenges, onBack, onLes
 
 /* ===================== LESSON ===================== */
 
-function LessonView({ track, idx, onBack, onComplete }) {
+function LessonView({ track, idx, session, onSignIn, onBack, onComplete }) {
   const lesson = track.lessons[idx];
   const isLast = idx === track.lessons.length - 1;
   const exercises = LESSON_EXERCISES[lesson.id] || [];
@@ -2658,7 +2661,23 @@ function LessonView({ track, idx, onBack, onComplete }) {
       </section>
 
       {/* coding exercises */}
-      {exercises.length > 0 && (
+      {exercises.length > 0 && !session && (
+        <div style={{ background: "#0C1A1D", borderRadius: 12, padding: "22px 24px", margin: "22px 0 24px", border: "1px solid rgba(255,255,255,.08)", display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 28, lineHeight: 1 }}>🔒</div>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ ...Display, fontWeight: 700, fontSize: 15, color: "#fff", marginBottom: 3 }}>
+              {exercises.length} coding exercise{exercises.length > 1 ? "s" : ""} in this lesson
+            </div>
+            <div style={{ fontSize: 13, color: "#9FB8B4", lineHeight: 1.5 }}>
+              Sign in for free to write and run real Python exercises right here in your browser.
+            </div>
+          </div>
+          <button onClick={onSignIn} style={{ ...Display, background: track.color, color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>
+            Sign in to practice
+          </button>
+        </div>
+      )}
+      {exercises.length > 0 && session && (
         <div style={{ marginTop: 22, marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <span style={{ ...Mono, fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: track.color, fontWeight: 700 }}>Practice — write & run code</span>
@@ -2928,7 +2947,7 @@ function Row({ label, color, text, mono }) {
 
 /* ===================== PRACTICE LAB ===================== */
 
-function PracticeLab({ track, solvedChallenges, onSolved, onBack }) {
+function PracticeLab({ track, session, onSignIn, solvedChallenges, onSolved, onBack }) {
   const SANDBOX = {
     id: "sandbox", title: "Free sandbox", runnable: true,
     prompt: "No assignment — this is your scratchpad. Try out any idea: loops, functions, math, mini experiments. Run it for real, or ask the AI mentor for feedback on whatever you build.",
